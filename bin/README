@@ -1,0 +1,11 @@
+These are tools to make bayes.html
+
+1. put "bayeselo" binary on current directory.
+   https://www.remi-coulom.fr/Bayesian-Elo/
+2. put "tclkit"
+3. run wbloop
+
+
+A sample 19x19.pgn
+http://www.yss-aya.com/20210112cgos_bin.tar.bz2
+

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+while true
+do
+  echo "making 9x9 html..."
+  ./mdigest 9x9
+  sleep 3s
+  ./cgosBayes 9x9
+  sleep 3s
+
+  echo "making 13x13 html..."
+  ./mdigest 13x13
+  sleep 3s
+  ./cgosBayes 13x13
+  sleep 3s
+
+  echo "making 19x19 html..."
+  ./mdigest 19x19
+  sleep 3s
+  ./cgosBayes 19x19
+
+  echo "sleep one day..."
+#  sleep 60s
+  sleep 24h
+done
+

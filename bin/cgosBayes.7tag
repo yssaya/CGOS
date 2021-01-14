@@ -1,0 +1,202 @@
+#!/home/yss/cgosboar/bin/tclkit 
+
+set MIN_GAMES 100
+
+set lf stdout
+puts $lf ""
+
+proc log {msg} {
+    global lf        
+    set tme [clock format [clock seconds] -format "%Y-%m-%d %H:%M:%S"]
+    puts $lf "$tme | $msg" 
+}
+
+
+
+if { $argc == 1 } {
+   set sz [lindex $argv 0]        
+} else {
+  puts "example:  ./makeSgfArchive 13x13"
+  exit 1
+}
+
+# log "getting digest"
+# exec scp cgosboar@cgos.boardspace.net:public_html/$sz/digest.txt $sz.txt
+# log "  ok"
+
+set fixup [open $sz.fix w]
+
+set pgn [open $sz.pgn w]
+#set f [open public_html/$sz/digest.txt]
+set f [open digest.txt]
+
+set head {[Event "Autotest Sequence"]
+[Site "Local Site"]
+[Date "9z9z9z"]
+[Round "1"]
+[White "wWwWw"]
+[Black "bBbBb"]
+[Result "rRrRr"]
+
+1. Nf3 Nf6 2. g4 Ng8 3. c3 h5 4. d3 f5 5. gxf5 Nh6 6. e4 a6 7. c4 b5 rRrRr
+}
+
+log "building pgn"
+
+while { [gets $f s] >= 0 } {
+
+    set lst [split $s |]
+    
+    lassign $lst gid dte w b res
+
+    if { [regexp {,.?$} $w ] } {
+       set w "[string range $w 0 end-1]*"
+    }   
+
+    if { [regexp {,.?$} $b ] } {
+       set b "[string range $b 0 end-1]*"
+    }   
+
+    if { [string range $w 0 13] == "Gnugo-3.7.10-a" } {
+	set w "Gnugo-3.7.10-a1"
+    }	
+
+    if { [string range $b 0 13] == "Gnugo-3.7.10-a" } {
+	set b "Gnugo-3.7.10-a1"
+    }	
+
+    if { $w == $b } { continue }
+
+    regsub 9z9z9z $head $dte rec
+    regsub wWwWw $rec $w recB
+    regsub bBbBb $recB $b recC
+
+
+    if { [string range $res 0 0] == "W" } {
+        regsub -all rRrRr $recC "1-0" recD
+    }
+
+    if { [string range $res 0 0] == "B" } {
+        regsub -all rRrRr $recC "0-1" recD
+    }
+
+    if { [string range $res 0 0] == "D" } {
+        regsub -all rRrRr $recC "1/2-1/2" recD
+    }
+
+
+    puts $pgn $recD
+}
+
+close $pgn
+
+close $f
+
+log "  ok"
+
+
+if { $sz == "9x9" } {
+  exec ./elorate $sz.pgn Gnugo-3.7.10-a1 1800 > tmp.killme.txt
+} else {
+  exec ./elorate $sz.pgn Gnugo-3.7.10-a1 1800 > tmp.killme.txt
+}
+
+
+set html [open ../../public_html/cgos/$sz/bayes.html w]
+#set html [open bayes.html w]
+
+set f [open tmp.killme.txt r]
+
+set title "CGOS Whole Period Ratings for $sz Board"
+
+#set tme [clock format [clock seconds] -format {%Y-%m-%d %H:%M} -timezone :UTC]
+set tme [clock format [clock seconds] -format {%Y-%m-%d %H:%M} -gmt true]
+
+set asof "updated: $tme UTC"
+
+set hh {
+<html>
+<title>}
+append hh $sz
+append hh { All Time Ranks</title>
+<head>
+<center>
+<H2>TTIITTLLEE</H2>
+<H4>AS__OF</H4>
+<p>
+<H5>Programs must have played MINGAMES Games. <br />Computed by <a 
+href="http://www.remi-coulom.fr/Bayesian-Elo/">BayesElo</a>. Updated once a day.<br>
+Two assumptions. All games are played at once. All program's strength are fixed.</H5>
+</center>
+<p>
+</head>
+<body BGCOLOR="#ECECEA" TEXT="#001000">
+<center>
+<table border=1 cellpadding=4 cellspacing=0 justify=center style="font-family;verdana;font-size:80%">
+<tr BGCOLOR="#708070" style="color:white">
+<th>Rank</th>
+<th>Name</th>
+<th>Elo</th>
+<th>+</th>
+<th>&minus;</th>
+<th>Games</th>
+<th>score</th>
+<th>opponent</th>
+<th>draw</th>
+</tr>
+}
+
+regsub MINGAMES $hh $MIN_GAMES shead 
+
+regsub TTIITTLLEE $shead $title thead
+regsub AS__OF $thead $asof nhead
+
+# oringinal line:  regsub TTIITTLLEE $hh $title nhead
+
+puts $html $nhead
+
+
+set count 1
+
+while { [gets $f lst] >= 0 } {
+
+
+    lassign $lst rnk nam elo plus minus games score opp draw
+
+
+    if { [string is integer $rnk] } {
+        if { $games >= $MIN_GAMES } {
+            puts $html "  <tr BGCOLOR=\"ffffff\">"
+            puts $html "  <td align=right>$count</td>"
+	    if { ![regexp {,.$} $nam] } {
+		puts $html "  <td><a href=\"cross/$nam.html\">$nam</a></td>"
+	    } else {
+		puts $html "  <td>$nam</td>"
+		set  psn "[string range $nam 0 end-1]%"
+		puts $fixup "update password set rating=$elo where name like \"$psn\";"
+	    }
+            puts $html "  <td align=right>$elo</td>"
+            puts $html "  <td align=right>$plus</td>"
+            puts $html "  <td align=right>$minus</td>"
+            puts $html "  <td align=right>$games</td>"
+            puts $html "  <td align=right>$score</td>"
+            puts $html "  <td align=right>$opp</td>"
+            puts $html "  <td align=right>$draw</td>"
+            puts $html "</tr>"
+            incr count
+        }
+    } 
+}
+
+puts $html "</table>"
+puts $html "</center>"
+puts $html "</body>"
+puts $html "</html>"
+
+close $f
+close $html
+
+log "Finished run"
+
+# cp bayes_$sz.html cgosboar@cgos.boardspace.net:public_html/$sz/bayes.html
+

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ $# -ne 3 ]; then
+  echo "Usage: archive_make 19 2016 02" 1>&2
+  exit 1
+fi
+
+cd ../../public_html/cgos/${1}x${1}/SGF
+tar cjvf ${1}x${1}_${2}_${3}.tar.bz2 ${2}/${3}/
+mv ${1}x${1}_${2}_${3}.tar.bz2 ../archives/
+
+echo "done... ${1}x${1} $2 / $3"
+

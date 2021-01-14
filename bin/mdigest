@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 9x9"
+  exit 1
+fi
+
+/usr/bin/sqlite3 ../$1/cgos.state "select gid, dte, w, b, res from games" > digest.txt

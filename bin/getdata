@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#.bashrc
+
+#/usr/bin/sqlite3 ../9x9/cgos.state "select * from games" > tmp.killme
+/usr/bin/sqlite3 ../9x9/cgos.state "select gid, dte, w, b, res from games" > tmp.killme
+cat tmp.killme
+rm tmp.killme

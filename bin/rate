@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#export LD_LIBRARY_PATH=/usr/local/lib
+
+/usr/bin/sqlite3 ../9x9/cgos.state "select name,rating,k from password" | grep -i $1

@@ -1,0 +1,109 @@
+#!/home/yss/cgosboar/bin/tclkit 
+
+set fixed 0
+
+if { $argc == 0 } {
+    puts "usage: $argv0 PGNFILE \{player\} \{playerElo\}"
+    exit 0
+}
+
+set fname [lindex $argv 0]
+
+if { $argc > 2 } {
+    set who [lindex $argv 1]
+    set rat [lindex $argv 2]
+    set fixed 1
+}
+
+
+#set pip [open "|bin/bayeselo" r+]
+set pip [open "|./bayeselo" r+]
+fconfigure $pip -buffering line
+
+# ---------------------------------
+# readpgn games.pgn
+# elo
+# advantage 0 ;no advantage for playing White
+# drawelo 0.01 ;draws are extremely unlikely
+# mm
+# exactdist
+# ratings 
+# ---------------------------------
+
+
+# fileevent $pip readable [list getData $pip]
+
+puts $pip "readpgn $fname"
+puts $pip "elo"
+puts $pip "advantage 0"
+
+if { $fname == "9x9.pgn" } {
+#  puts "9x9 setting..."
+#  puts $pip "drawelo 0.01"
+#  puts $pip "mm 1 1"
+  puts $pip "drawelo 20"
+  puts $pip "mm"
+} else {
+  puts $pip "drawelo 0.01"
+  puts $pip "mm"
+}
+
+
+if { $fixed } {
+    puts $pip "offset $rat $who"
+}
+
+puts $pip "ratings"
+puts $pip "x"
+puts $pip "x"
+
+set ok 0
+set perc ""
+
+puts ""
+
+while { [gets $pip s] >= 0 } {
+
+    if { $ok == 0 } {
+        if { [regexp {(Rank\s+Name\s+.*)} $s dmy h1] } {
+            puts $h1
+            set ok 1
+            continue
+        }
+    }
+
+    if { $ok == 1 } {
+        if { [regexp {^ResultSet-EloRating>(\s+.*)} $s dmy h2] } {
+            # puts "\n\n$h2"
+            set players $h2
+            set ok 2
+        } else {
+            puts $s
+        }
+        continue
+    }
+
+    if { $ok == 2 } {
+        if { [regexp {^ResultSet-EloRating} $s] } {
+            continue
+        } else {
+            
+            set d [regexp -all -inline -indices {\s+(\d+)} $s]
+
+            foreach {ignore ft} $d {
+                lassign $ft b e
+                set old [string range $s $b $e]
+                set new [expr $old / 100000.0]
+                lappend perc $new
+            }
+            # puts $s
+        }
+
+    }
+
+}
+
+
+
+puts "\n"
+
