@@ -1,7 +1,7 @@
 # CGOS
 CGOS is Go server for computer programs.
 Server is running on  
-<http://www.yss-aya.com/cgos/>
+<http://www.yss-aya.com/cgos/>  
 Original source code are on sourceforge.  
 <https://sourceforge.net/projects/cgos/>
 
