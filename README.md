@@ -8,7 +8,9 @@ Original source code are on sourceforge.
 # Start server
 server  
 $ cd server/cgos.vfs  
-$ tclkit main.tcl ../cgos9.cfg
+$ tclkit main.tcl ../cgos9.cfg  
+$ cd cgosboar/9x9  
+$ echo ban_user_name >> badusers.txt
 
 make standings.html  
 $ cd server/webuild.vfs  
@@ -27,6 +29,15 @@ anchors   clients   gameid    games     password
 sqlite> .schema anchors  
 sqlite> insert into anchors values('Gnugo-3.7.10-a1', 1800);  
 sqlite> .exit
+
+# Changes
+1. Recent 300 games on cross-table page.  
+2. WGo viewer  
+3. 7.0 komi and handling draw for rating calculation.  
+4. Shorter pgn file for BayesElo (cgosBayes).  
+5. Forbid number only account.  
+6. Bug fixed to send info all 'catch {puts $soc "info $msg"}'  
+7. badusers.txt for not removing dead stones or too many timeout.
 
 # Don Dailey original explanation
 How to build from source:  
