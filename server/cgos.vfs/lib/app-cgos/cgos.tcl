@@ -1490,13 +1490,65 @@ proc  schedule_games {} {
 
 	set lst [lsort -command rcmp $lst]
 
+
+	# delte anchor vs anchor
+	if { [llength $lst] > 1 } {
+	    log "is delele anchor vs anchor ?: [llength $lst] players"
+	    set i 0
+	    foreach {aa bb} $lst {
+		set f_del 0
+		set i [expr $i + 2]
+		if { $aa == "" || $bb == "" } continue
+#		log "aa= $aa,  bb= $bb"
+		set wp [lindex $aa 0]  ;# actual player names
+		set bp [lindex $bb 0]  ;# actual player names
+#		log "wp= $wp,  bp= $bp"
+		if { $wp =="go11dum1" && $bp == "go11dum2" } { set f_del 1 }
+		if { $wp =="go11dum1" && $bp == "go11dum3" } { set f_del 1 }
+		if { $bp =="go11dum1" && $wp == "go11dum2" } { set f_del 1 }
+		if { $bp =="go11dum1" && $wp == "go11dum3" } { set f_del 1 }
+
+		if { $wp =="LZ_282_0410_p400" && $bp == "kata145b20s530v400" } { set f_del 1 }
+		if { $wp =="LZ_282_0410_p400" && $bp == "CrazyStone-81-15po" } { set f_del 1 }
+		if { $wp =="LZ_282_0410_p400" && $bp == "LeelaZero-287_8p"   } { set f_del 1 }
+		if { $wp =="LZ_282_0410_p400" && $bp == "LeelaZero-287_1p"   } { set f_del 1 }
+		if { $wp =="LZ_282_0410_p400" && $bp == "Leela-0.11.0_5k"    } { set f_del 1 }
+		if { $wp =="LZ_282_0410_p400" && $bp == "Leela-0.10.0_5k"    } { set f_del 1 }
+		if { $wp =="LZ_282_0410_p400" && $bp == "Leela-0.9.0_5k"     } { set f_del 1 }
+		if { $wp =="LZ_282_0410_p400" && $bp == "Leela-0.8.0_5k"     } { set f_del 1 }
+		if { $wp =="LZ_282_0410_p400" && $bp == "myCtest-10k-UCT"    } { set f_del 1 }
+		if { $wp =="LZ_282_0410_p400" && $bp == "myCtest-10k"        } { set f_del 1 }
+
+		if { $bp =="LZ_282_0410_p400" && $wp == "kata145b20s530v400" } { set f_del 1 }
+		if { $bp =="LZ_282_0410_p400" && $wp == "CrazyStone-81-15po" } { set f_del 1 }
+		if { $bp =="LZ_282_0410_p400" && $wp == "LeelaZero-287_8p"   } { set f_del 1 }
+		if { $bp =="LZ_282_0410_p400" && $wp == "LeelaZero-287_1p"   } { set f_del 1 }
+		if { $bp =="LZ_282_0410_p400" && $wp == "Leela-0.11.0_5k"    } { set f_del 1 }
+		if { $bp =="LZ_282_0410_p400" && $wp == "Leela-0.10.0_5k"    } { set f_del 1 }
+		if { $bp =="LZ_282_0410_p400" && $wp == "Leela-0.9.0_5k"     } { set f_del 1 }
+		if { $bp =="LZ_282_0410_p400" && $wp == "Leela-0.8.0_5k"     } { set f_del 1 }
+		if { $bp =="LZ_282_0410_p400" && $wp == "myCtest-10k-UCT"    } { set f_del 1 }
+		if { $bp =="LZ_282_0410_p400" && $wp == "myCtest-10k"        } { set f_del 1 }
+
+		set r [expr rand()]
+#		log "f_del = $f_del, r=$r, i=$i"
+		if { $f_del == 1 && $r > 0.10 } {
+		    log "delete this match. $wp, $bp, r=$r,i=$i"
+		    lset lst [expr $i - 2] ""
+		    lset lst [expr $i - 1] ""
+		}
+	    }
+	}
+
+
+
 	if { [llength $lst] > 1 } {
 
 	    log "will schedule: [llength $lst] players"
 
 	    foreach {aa bb} $lst {
 		
-		if { $bb != "" } {
+		if { $aa != "" && $bb != "" } {
 		    
 		    # set up white and black players
 		    # ------------------------------
@@ -1580,12 +1632,10 @@ socket -server accept_connection $portNumber
 # Create a game scheduling event
 # ------------------------------
 
-# after 50000 schedule_games    
-after 45000 schedule_games    
-
+# after 45000 schedule_games
+after 45000 schedule_games
 
 
 # Drop Tcl into the event loop
 vwait forever
-
 

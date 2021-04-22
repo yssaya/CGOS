@@ -1,5 +1,5 @@
 # CGOS
-CGOS is Go server for computer programs.
+CGOS is a Go server for computer programs.
 Server is running on  
 <http://www.yss-aya.com/cgos/>  
 Original source code are on sourceforge.  
@@ -21,7 +21,7 @@ $ cd bin
 $ nohup ./wbloop > /dev/null &
 
 # Anchor
-cd cgosboar/9x9  
+$ cd cgosboar/9x9  
 $ sqlite3 cgos.state  
 sqlite> .tables  
 sqlite> select * from games;  
@@ -32,12 +32,14 @@ sqlite> .exit
 
 # Changes
 1. Recent 300 games on cross-table page.  
-2. WGo viewer  
-3. 7.0 komi and handling draw for rating calculation.  
-4. Shorter pgn file for BayesElo (cgosBayes).  
-5. Forbid number only account.  
-6. Bug fixed to send info all 'catch {puts $soc "info $msg"}'  
-7. badusers.txt for not removing dead stones or too many timeout.
+2. Default rating is average of active players.  
+3. WGo viewer  
+4. 7.0 komi and handling draw for rating calculation.  
+5. Shorter pgn file for BayesElo (cgosBayes).  
+6. Forbid number only account.  
+7. Bug fixed to send info all 'catch {puts $soc "info $msg"}'  
+8. badusers.txt for not removing dead stones or too many timeout.  
+9. Reduce anchor vs anchor.
 
 # Don Dailey original explanation
 How to build from source:  
