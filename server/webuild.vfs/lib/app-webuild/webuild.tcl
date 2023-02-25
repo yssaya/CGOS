@@ -46,7 +46,10 @@ proc gidcmp {a b} {
 array set rating {}
 
 
+
 proc crosstable {who} {
+
+
     
     global  htmlDir
     global  sgfDir
@@ -58,12 +61,15 @@ proc crosstable {who} {
 
 
     db transaction {
-	set wgms [cgi eval {SELECT gid, b, br, dte, wr, res FROM games WHERE w=$who ORDER BY gid} ]
-	set bgms [cgi eval {SELECT gid, w, wr, dte, br, res FROM games WHERE b=$who ORDER BY gid} ]
+	#set wgms [cgi eval {SELECT gid, b, br, dte, wr, res FROM games WHERE w=$who ORDER BY gid} ]
+	#set bgms [cgi eval {SELECT gid, w, wr, dte, br, res FROM games WHERE b=$who ORDER BY gid} ]
+	set wgms [db eval {SELECT gid, b, br, dte, wr, wtu, res FROM games WHERE w=$who ORDER BY gid} ]
+	set bgms [db eval {SELECT gid, w, wr, dte, br, btu, res FROM games WHERE b=$who ORDER BY gid} ]
     }
 #create table games(gid int, w, wr,  b, br,  dte, res);
 
-    foreach {gid opp r dte my_r res} $wgms {
+    foreach {gid opp r dte my_r my_time res} $wgms {
+	#puts "wgsm: $gid $opp $r $my_r $my_time $res $dte"
 	if { [catch { incr count($opp) }] } {
 	    set count($opp) 1
 	    set wins($opp) 0
@@ -86,7 +92,8 @@ proc crosstable {who} {
 	set brate($opp) [list $gid $r]
     }
 
-    foreach {gid opp r dte my_r res} $bgms {
+    foreach {gid opp r dte my_r my_time res} $bgms {
+	#puts "bgsm: $gid $opp $r $my_r $my_time $res $dte"
 	if { [catch { incr count($opp) }] } {
 	    set count($opp) 1
 	    set wins($opp) 0
@@ -205,17 +212,19 @@ proc crosstable {who} {
 
 
     set view_num 300
-    set v_n [expr ($view_num * 6) - 1]       ;# SELECT gid, b, br, dte, wr, res  ... 6 list
+    set v_n [expr ($view_num * 7) - 1]       ;# SELECT gid, b, br, dte, wr, my_time, res  ... 7 list
 
     set wgms_short [lrange $wgms end-$v_n end]
     set bgms_short [lrange $bgms end-$v_n end]
 
     set listgame {}
-    foreach {gid opp r dte my_r res} $wgms_short {
- 	lappend listgame [format "%8d %s %s %s %s %s W" $gid $opp $r $my_r $dte $res]
+    foreach {gid opp r dte my_r my_time res} $wgms_short {
+ 	#puts "wgsm_short: $gid $opp $r $my_r $my_time $dte $res"
+ 	lappend listgame [format "%8d %s %s %s %s %s %s W" $gid $opp $r $my_r $my_time $dte $res]
     }
-    foreach {gid opp r dte my_r res} $bgms_short {
- 	lappend listgame [format "%8d %s %s %s %s %s B" $gid $opp $r $my_r $dte $res]
+    foreach {gid opp r dte my_r my_time res} $bgms_short {
+ 	#puts "bgsm_short: $gid $opp $r $my_r $my_time $dte $res"
+ 	lappend listgame [format "%8d %s %s %s %s %s %s B" $gid $opp $r $my_r $my_time $dte $res]
     }
 
 #    set len [llength $wgms]
@@ -235,10 +244,10 @@ proc crosstable {who} {
     set tog [list "\#f0f0e0" "\#c8d0c8" ]
     append rpt "<center><h3>Recent $dsp_num Games</h3>\n"
     append rpt "<table class=solid cellspacing=0 justify=center style=\"font-family;verdana;font-size:80%\">\n"
-    append rpt "<colgroup span=4><col width=210></col><col width=100><col width=100></col><col width=100></col></colgroup>\n"
-    append rpt "<tr><th align=left>Opponent</th><th align=left>Opp rating</th><th align=left>Result</th><th align=left>Rating</th><th align=left>Game</th></tr>\n"
+    append rpt "<colgroup span=5><col width=210></col><col width=100><col width=100></col><col width=70></col><col width=70></col></colgroup>\n"
+    append rpt "<tr><th align=left>Opponent</th><th align=left>Opp rating</th><th align=left>Result</th><th align=left>Time</th><th align=left>Rating</th><th align=left>Game</th></tr>\n"
     foreach {rec} $listgamesort {
-	lassign $rec gid opp r my_r dte dte2 res col
+	lassign $rec gid opp r my_r my_time dte dte2 res col
 	set sgfpath "../$sgfDir/"
 	append sgfpath "[string range $dte 0 3]/"
 	append sgfpath "[string range $dte 5 6]/"
@@ -272,7 +281,10 @@ proc crosstable {who} {
             append rpt "<tr bgcolor=\"#f0f0e0\">"
 	}
 
-	append rpt "<td>$opp</td><td>$r</td><td>$w0 $res $w1</td><td>$my_r</td><td><a href=\"$sgfpath\">$gid</a> <a href=\"../../viewer.cgi?$vsgfpath\">View</a></td></tr>\n"
+	set  t [expr $my_time / 1000]
+	set  ti [format "%02d:%02d" [expr $t / 60] [expr $t % 60]]
+
+	append rpt "<td>$opp</td><td>$r</td><td>$w0 $res $w1</td><td>$ti</td><td>$my_r</td><td><a href=\"$sgfpath\">$gid</a> <a href=\"../../viewer.cgi?$vsgfpath\">View</a></td></tr>\n"
 #	append rpt "<td>$opp</td><td>$r</td><td>$w0 $res $w1</td><td>$my_r</td><td><a href=\"$sgfpath\">$gid</a></td></tr>\n"
 #	append rpt "<td>$opp</td><td>$rat</td><td class=solid>$twins / $tdraws / $tgames</td><td class=solid>$winp</td></tr>\n"
 	incr loop 1
@@ -477,17 +489,26 @@ proc  buildWebPage {} {
     # ---------------------------------------
     # lappend sch [list $gid $w $wr $b $br "$dte $tme"]
     foreach rec $sch {
-	lassign $rec gid w wr b br tme
+	#lassign $rec gid w wr b br tme
+	lassign $rec gid w wr b br dte
 	set  wn  "$w\($wr\)"
 	set  bn  "$b\($br\)"
 
 	set  re {- playing ...}
-	set  tme "&mdash;"
+	#set  tme "&mdash;"
 	set  tw "&mdash;"
 	set  tb "&mdash;"
-	
+
+	set vsgfpath "$boardsize"
+	append vsgfpath "x"
+	append vsgfpath "$boardsize"
+	append vsgfpath "/$sgfDir/"
+	append vsgfpath "[string range $dte 0 3]/"
+	append vsgfpath "[string range $dte 5 6]/"
+	append vsgfpath "[string range $dte 8 9]/$gid.sgf"
+
 	puts $wf "<tr bgcolor=\"[lindex $tog $tcc]\">"
-	puts $wf "<td align=center>$gid</td><td>$wn</td><td>$tw</td><td>$bn</td><td>$tb</td><td>$re</td></tr>\n"
+	puts $wf "<td align=center>$gid</td><td>$wn</td><td>$tw</td><td>$bn</td><td>$tb</td><td>$re <a href=\"../../viewer.cgi?$vsgfpath\">View</a></td></tr>\n"
 
 	set tcc [expr $tcc ^ 1]
     }
@@ -568,7 +589,7 @@ if { [ catch {source $cfg} ] } {
 
 
 if { [catch {sqlite3 db $database_state_file} ] } {
-    puts "Error opening $cgi_database datbase."
+    puts "Error opening $database_state_file ."
     exit 1
 }
 
@@ -598,7 +619,7 @@ proc  update_ratings {} {
 
 #  cgi eval { INSERT INTO games VALUES($gid, $w, $wsrate, $b, $bsrate, $dte, $res) }
 if { [catch {sqlite3 cgi $cgi_database} ] } {
-    puts "Error opening $cgi_database datbase."
+    puts "Error opening $cgi_database ."
     exit 1
 }
 
