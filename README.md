@@ -2,6 +2,9 @@
 CGOS is a Go server for computer programs.
 Server is running on  
 <http://www.yss-aya.com/cgos/>  
+Latest (2023/12/09) code is here.
+This version can show winrate, and has my cgos changes. 
+<https://github.com/zakki/cgos>
 Original source code are on sourceforge.  
 <https://sourceforge.net/projects/cgos/>
 
